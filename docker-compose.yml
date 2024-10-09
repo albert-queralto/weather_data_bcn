@@ -1,0 +1,80 @@
+name: energy_consumption_project
+version: "3.8"
+services:
+  weather_data_bcn:
+    image: weather_data_bcn
+    container_name: weather_data_bcn
+    build:
+      context: .
+      dockerfile: weather_data_bcn.Dockerfile
+    links:
+      - postgres_db
+    volumes:
+      - ${LOCAL_PATH}:${CONTAINER_PATH}
+    ports:
+      - "8300:8300"
+    expose:
+      - 8300
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4GB
+    env_file:
+      - .env
+    networks:
+      - weather_network
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+    # command: ["/root/home/init_config.sh"]
+    restart: unless-stopped
+    entrypoint: /bin/bash
+    depends_on:
+      - postgres_db
+  
+  scheduler:
+    image: mcuadros/ofelia:latest
+    container_name: scheduler
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${LOCAL_PATH}/config.ini:/etc/ofelia/config.ini
+      - ${LOCAL_PATH}/logs:${CONTAINER_PATH}/logs
+    networks:
+      - weather_network
+    command: daemon --config=/etc/ofelia/config.ini
+    restart: unless-stopped
+    depends_on:
+      - weather_data_bcn
+
+  postgres_db:
+    image: postgres:16
+    container_name: postgres_db
+    restart: unless-stopped
+    volumes:
+      - ${LOCAL_PATH}/postgres/db:/var/lib/postgresql/data
+      - ${LOCAL_PATH}/postgres/sql:/docker-entrypoint-initdb.d/
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+      - POSTGRES_USER=${POSTGRES_DB_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4GB
+    env_file:
+      - .env
+    ports:
+      - 5432:5432
+    expose: 
+      - 5432
+    networks:
+      - weather_network
+
+networks:
+  weather_network:
+volumes:
+  postgres_db:
+    external: true

@@ -1,0 +1,31 @@
+# Ignore files
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.mypy_cache
+.hypothesis
+*.lock
+*.toml
+*.yml
+
+# Ignored folders
+.git
+.pytest_cache
+.vscode
+__pycache__
+env
+input_data
+html_cov
+saved_data
+notebooks
