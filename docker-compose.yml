@@ -1,8 +1,6 @@
 name: energy_consumption_project
-version: "3.8"
 services:
   weather_data_bcn:
-    image: weather_data_bcn
     container_name: weather_data_bcn
     build:
       context: .
@@ -12,9 +10,9 @@ services:
     volumes:
       - ${LOCAL_PATH}:${CONTAINER_PATH}
     ports:
-      - "8300:8300"
+      - "8100:8100"
     expose:
-      - 8300
+      - 8100
     deploy:
       resources:
         limits:
@@ -67,9 +65,9 @@ services:
     env_file:
       - .env
     ports:
-      - 5432:5432
+      - 5000:5432
     expose: 
-      - 5432
+      - 5000
     networks:
       - weather_network
 
