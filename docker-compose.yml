@@ -1,4 +1,4 @@
-name: energy_consumption_project
+name: weather_data_bcn
 services:
   weather_data_bcn:
     container_name: weather_data_bcn
