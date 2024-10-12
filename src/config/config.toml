@@ -1,3 +1,5 @@
 [preprocessing]
 data_type = "engineered_data"
 start_time_window = 100
+direction = "backward"
+date_frequency = "1D"
