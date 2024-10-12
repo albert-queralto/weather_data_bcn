@@ -18,7 +18,7 @@ class EngineeredFeaturesTable(Base):
 
     latitude = Column(
         name = 'latitude',
-        type_= String,
+        type_= Float,
         primary_key = True,
         nullable = False,
         index = False
@@ -26,7 +26,7 @@ class EngineeredFeaturesTable(Base):
     
     longitude = Column(
         name = 'longitude',
-        type_= String,
+        type_= Float,
         primary_key = True,
         nullable = False,
         index = False
