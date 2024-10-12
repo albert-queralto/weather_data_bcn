@@ -8,8 +8,8 @@ class EngineeredFeaturesSchema(BaseModel):
     Definition of the table that contains the engineered features.
     """
     timestamp: datetime
-    latitude: str
-    longitude: str
+    latitude: float
+    longitude: float
     variable_code: str
     value: Optional[float] = None
     update_date: Optional[datetime] = None
