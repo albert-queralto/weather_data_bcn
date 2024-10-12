@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS engineered_features (
 	"timestamp" TIMESTAMP WITHOUT TIME ZONE,
-	"latitude" TEXT,
-	"longitude" TEXT,
+	"latitude" REAL,
+	"longitude" REAL,
 	"variable_code" TEXT,
 	"value" REAL,
 	"update_date" TIMESTAMP WITHOUT TIME ZONE,
