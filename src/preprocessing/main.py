@@ -1,25 +1,22 @@
 """
 Example command line:
 ---------
-- python "/root/home/Preprocessing/main.py" -lat -lon -sd "2015-10-11 00:00:00" -ed "2023-03-29 05:30:00"
+- python "/root/home/src/preprocessing/main.py" -lat 41.389 -lon 2.159 -sd "2015-10-11" -ed "2023-03-29"
 """
 
 import os
-import re
 import sys
 import time
 import pandas as pd
-from ast import literal_eval
-from datetime import datetime
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 from pathlib import Path
 import sqlalchemy
-from abc import ABC, abstractmethod
 
 MAIN_PATH = Path(__file__).resolve().parents[1]
 sys.path.append(str(MAIN_PATH))
 
+import utils.argparsers
 from dotenv import load_dotenv
 env_path = MAIN_PATH / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -36,10 +33,7 @@ from utils.file_handlers import TomlHandler
 from utils.custom_logger import CustomLogger
 from loaders.api import OpenMeteoDataManager
 
-from utils.helpers import (
-    get_class_methods_exclude_dunder,
-    get_classes_by_string_name,
-)
+from utils.helpers import get_class_methods_exclude_dunder
 
 from database.connections import DatabaseConnection, ConnectionStringBuilder
 from utils.seasonal_features import CreateSeasonalFeatures
@@ -49,9 +43,7 @@ from loaders.preprocessing import EngineeredFeaturesManager
 @dataclass
 class Preprocessor:
     """
-    Implements the methods to treat outliers and null values in the data used by
-    the autovalidation system. Loads the data from the database and saves the
-    processed data also in the database.
+    Implements the methods to preprocess the data.
     """
     logger: CustomLogger
     connection: sqlalchemy.engine.Connection
@@ -96,12 +88,11 @@ class Preprocessor:
 
 
 if __name__ == "__main__":
-    latitude = 41.389
-    longitude = 2.159
-    start_date = "2023-03-28"
-    end_date = "2023-03-29"
     start_time = time.time()
-    
+
+    parser = utils.argparsers.get_parser()
+    args = parser.parse_args()
+
     CONFIG_DICT = TomlHandler("config.toml").load()
     LOGGER_CONFIG = TomlHandler("logger.toml").load()
 
@@ -120,7 +111,7 @@ if __name__ == "__main__":
     
     preprocessor = Preprocessor(logger, postgres_connect)
     logger.debug("Loading the data...")
-    df = preprocessor.load_data(latitude, longitude, start_date, end_date)
+    df = preprocessor.load_data(args.latitude, args.longitude, args.start_date, args.end_date)
     
     logger.debug("Filling null values...")
     null_filled_df = preprocessor.null_values_filling(df)
@@ -130,4 +121,4 @@ if __name__ == "__main__":
     seasonal_df = seasonal_feats_creator(null_filled_df, seasonal_methods)
 
     logger.debug("Saving the data to the database...")
-    preprocessor.save_data_to_db(seasonal_df, latitude, longitude, DB_BATCH_SIZE)
+    preprocessor.save_data_to_db(seasonal_df, args.latitude, args.longitude, DB_BATCH_SIZE)
