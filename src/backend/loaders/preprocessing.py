@@ -32,9 +32,9 @@ class EngineeredFeaturesManager(DatabaseDataManager):
         ) -> pd.DataFrame:      
         conditions_list = ['None', None, '']
         conditions = [
-            or_(
-                EngineeredFeaturesTable.latitude.like(f'{latitude}%'),
-                EngineeredFeaturesTable.longitude.like(f'{longitude}%'),
+            and_(
+                EngineeredFeaturesTable.latitude == latitude,
+                EngineeredFeaturesTable.longitude == longitude,
             )
         ]
 
