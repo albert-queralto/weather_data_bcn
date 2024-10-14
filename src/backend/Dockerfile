@@ -36,3 +36,4 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN rm requirements.txt
 
 RUN mkdir -p $APP_USER_HOME/logs
+COPY ./init_config.sh .
