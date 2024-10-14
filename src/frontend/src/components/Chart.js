@@ -5,18 +5,21 @@ import * as am5xy from "@amcharts/amcharts5/xy";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import '../styles/Chart.css'; // Import the CSS file
 
 const ChartComponent = () => {
   const [data, setData] = useState([]);
-  const [latitude, setLatitude] = useState(41.389);
-  const [longitude, setLongitude] = useState(2.159);
+  const [latitude, setLatitude] = useState("41.389");
+  const [longitude, setLongitude] = useState("2.159");
   const [startDate, setStartDate] = useState(new Date('2024-10-01'));
   const [endDate, setEndDate] = useState(new Date('2024-10-02'));
 
+  // curl -X POST -H "Content-Type: application/json" -d '{"latitude":"41.389", "longitude":"2.159", "start_date":"2024-10-01", "end_date":"2024-10-02"}' http://localhost:8100/get_data
+
   useEffect(() => {
-    axios.post('http://localhost:4000/get_data', {
+    axios.post('http://localhost:8100/get_data', {
       latitude,
       longitude,
       start_date: startDate.toISOString().split('T')[0],
@@ -83,31 +86,31 @@ const ChartComponent = () => {
     };
   }, [data]);
 
-  const LocationMarker = () => {
-    useMapEvents({
-      click(e) {
-        setLatitude(e.latlng.lat);
-        setLongitude(e.latlng.lng);
-      },
-    });
-    return null;
+  const handleMapClick = (e) => {
+    setLatitude(e.latlng.lat);
+    setLongitude(e.latlng.lng);
   };
 
   return (
-    <div>
-      <div>
+    <div className="container">
+      <div className="sidebar">
         <label>Start Date: </label>
         <DatePicker selected={startDate} onChange={date => setStartDate(date)} />
         <label>End Date: </label>
         <DatePicker selected={endDate} onChange={date => setEndDate(date)} />
+        {/* <div className="map-container">
+          <MapContainer center={[latitude, longitude]} zoom={13} style={{ height: "200px", width: "100%" }} onClick={handleMapClick}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          </MapContainer>
+        </div> */}
       </div>
-      <MapContainer center={[latitude, longitude]} zoom={13} style={{ height: "400px", width: "100%" }}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <LocationMarker />
-      </MapContainer>
-      <div id="chartdiv" style={{ width: "100%", height: "500px" }}></div>
+      <div className="main-content">
+        <div className="chart-container">
+          <div id="chartdiv" style={{ width: "100%", height: "400px" }}></div>
+        </div>
+      </div>
     </div>
   );
 };
