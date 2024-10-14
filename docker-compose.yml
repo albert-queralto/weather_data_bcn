@@ -24,7 +24,7 @@ services:
     volumes:
       - ${LOCAL_PATH}/backend:${CONTAINER_PATH}/backend
     tty: true # docker run -t
-    # command: ["/root/home/init_config.sh"]
+    command: ["/root/home/init_config.sh"]
     restart: unless-stopped
     entrypoint: /bin/bash
     depends_on:
