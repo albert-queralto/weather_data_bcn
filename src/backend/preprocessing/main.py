@@ -116,6 +116,7 @@ class Preprocessor:
         return end_date
 
 def main(
+        logger: CustomLogger,
         connection: sqlalchemy.engine.Connection,
         latitude: float,
         longitude: float,
@@ -190,6 +191,7 @@ if __name__ == "__main__":
     postgres_connect = DatabaseConnection().connect(postgres_connection_string)
     
     main(
+        logger=logger,
         connection=postgres_connect,
         latitude=args.latitude,
         longitude=args.longitude,

@@ -1,48 +1,62 @@
-import { useState, useRef } from 'react';
-import { Navbar as BootstrapNavbar, Nav, Container, Overlay } from 'react-bootstrap';
-import '../styles/Navbar.css';
+import React, { useState } from "react";
+import { Navbar, Nav, NavDropdown } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/Navbar.css";
 
-const Navbar = () => {
-  const [showSubmenu, setShowSubmenu] = useState(false);
-  const target = useRef(null);
+const HoverNavDropdown = ({ title, id, children }) => {
+    const [show, setShow] = useState(false);
 
-  const handleToggle = () => setShowSubmenu(!showSubmenu);
+    const showDropdown = () => setShow(true);
+    const hideDropdown = () => setShow(false);
 
-  return (
-    <>
-      <BootstrapNavbar expand="lg" className="custom-navbar">
-        <Container>
-          <BootstrapNavbar.Brand href="#home"></BootstrapNavbar.Brand>
-          <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />
-          <BootstrapNavbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              <Nav.Link href="#home" style={{ marginRight: '20px' }}>Home</Nav.Link>
-              <Nav.Link href="#link" style={{ marginRight: '20px' }}>Link</Nav.Link>
-              <Nav.Link ref={target} onClick={handleToggle} style={{ marginRight: '20px' }}>
-                Dropdown
-              </Nav.Link>
-            </Nav>
-          </BootstrapNavbar.Collapse>
-        </Container>
-      </BootstrapNavbar>
-
-      <Overlay target={target.current} show={showSubmenu} placement="bottom">
-        {({ placement, arrowProps, show: _show, popper, ...props }) => (
-          <div
-            {...props}
-            className="custom-overlay"
-          >
-            <Nav className="flex-row">
-              <Nav.Link href="#action/3.1" style={{ marginRight: '20px' }}>Action</Nav.Link>
-              <Nav.Link href="#action/3.2" style={{ marginRight: '20px' }}>Another action</Nav.Link>
-              <Nav.Link href="#action/3.3" style={{ marginRight: '20px' }}>Something</Nav.Link>
-              <Nav.Link href="#action/3.4" style={{ marginRight: '20px' }}>Separated link</Nav.Link>
-            </Nav>
-          </div>
-        )}
-      </Overlay>
-    </>
-  );
+    return (
+        <NavDropdown
+            title={title}
+            id={id}
+            show={show}
+            onMouseEnter={showDropdown}
+            onMouseLeave={hideDropdown}
+        >
+            {children}
+        </NavDropdown>
+    );
 };
 
-export default Navbar;
+const renderMainMenu = (handleSubmenuSelection) => (
+    <Navbar bg="light" data-bs-theme="light" expand="lg" className="navbar-custom">
+        <Navbar.Brand href="#">
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="mr-auto">
+                <HoverNavDropdown title="Management" id="gestion-dropdown">
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("usermanagement")}>Users</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("apis")}>APIs</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("preprocessors")}>Preprocessors</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("models")}>Models</NavDropdown.Item>
+                    {/* <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("outliers")}>Outliers</NavDropdown.Item> */}
+                </HoverNavDropdown>
+                <HoverNavDropdown title="Data Preprocessing" id="preprocessing-dropdown">
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("preprocessing-visualize")}>Visualize</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("preprocessing-edit")}>Create or delete</NavDropdown.Item>
+                </HoverNavDropdown>
+                <HoverNavDropdown title="Training and predictions" id="training-dropdown">
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("training-edit")}>Create or delete</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("training-training")}>Entrenamiento y predicciones manuales</NavDropdown.Item>
+                </HoverNavDropdown>
+                <HoverNavDropdown title="Informes" id="reports-dropdown">
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("reports-predictions")}>Evolución predicciones</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("reports-real-predictions")}>Evolución medidas reales y predicciones</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("reports-descriptors-predictions")}>Evolución descriptores y predicciones</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("reports-weights")}>Visualización de pesos</NavDropdown.Item>
+                </HoverNavDropdown>
+                <HoverNavDropdown title="Otros" id="other-dropdown">
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("other-about")}>Acerca de</NavDropdown.Item>
+                </HoverNavDropdown>
+                <Nav.Link href="#" onClick={() => handleSubmenuSelection("logout")}>Logout</Nav.Link>
+            </Nav>
+        </Navbar.Collapse>
+    </Navbar>
+);
+
+export default renderMainMenu;
