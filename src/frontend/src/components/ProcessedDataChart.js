@@ -134,50 +134,55 @@ const ChartComponent = () => {
   const uniqueVariableCodes = [...new Set(data.map(item => item.variable_code))];
 
   return (
-    <div className="container">
-      <div className="sidebar">
-        <div className="form-group">
-          <label>Start Date: </label>
-          <DatePicker 
-            selected={startDate} 
-            onChange={date => setStartDate(date)} 
-            showTimeSelect
-            dateFormat="Pp"
-            popperClassName="datepicker-container"
-          />
-        </div>
-        <div className="form-group">
-          <label>End Date: </label>
-          <DatePicker 
-            selected={endDate} 
-            onChange={date => setEndDate(date)} 
-            showTimeSelect
-            dateFormat="Pp"
-            popperClassName="datepicker-container"
-          />
-        </div>
-        <div className="form-group">
-          <label>Variable Codes: </label>
-          <select multiple={true} value={selectedVariables} onChange={handleVariableChange}>
-            {uniqueVariableCodes.map(code => (
-              <option key={code} value={code}>{code}</option>
-            ))}
-          </select>
-        </div>
-        <div className="map-container">
-          <MapContainer center={[latitude, longitude]} zoom={13} style={{ height: "200px", width: "100%" }} onClick={handleMapClick}>
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <>
+      <div>
+        <h1 style={{ marginTop: '100px', textAlign: 'center' }}>Processed Data Chart</h1>
+      </div>
+      <div className="container">
+        <div className="sidebar">
+          <div className="form-group">
+            <label>Start Date: </label>
+            <DatePicker 
+              selected={startDate} 
+              onChange={date => setStartDate(date)} 
+              showTimeSelect
+              dateFormat="Pp"
+              popperClassName="datepicker-container"
             />
-          </MapContainer>
+          </div>
+          <div className="form-group">
+            <label>End Date: </label>
+            <DatePicker 
+              selected={endDate} 
+              onChange={date => setEndDate(date)} 
+              showTimeSelect
+              dateFormat="Pp"
+              popperClassName="datepicker-container"
+            />
+          </div>
+          <div className="form-group">
+            <label>Variable Codes: </label>
+            <select multiple={true} value={selectedVariables} onChange={handleVariableChange}>
+              {uniqueVariableCodes.map(code => (
+                <option key={code} value={code}>{code}</option>
+              ))}
+            </select>
+          </div>
+          <div className="map-container">
+            <MapContainer center={[latitude, longitude]} zoom={13} style={{ height: "200px", width: "100%" }} onClick={handleMapClick}>
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+            </MapContainer>
+          </div>
+        </div>
+        <div className="main-content">
+          <div className="chart-container">
+            <div id="chartdiv" style={{ width: "180%", height: "400px" }}></div>
+          </div>
         </div>
       </div>
-      <div className="main-content">
-        <div className="chart-container">
-          <div id="chartdiv" style={{ width: "100%", height: "400px" }}></div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

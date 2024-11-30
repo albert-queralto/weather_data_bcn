@@ -26,7 +26,7 @@ export default function Login(props) {
     const onSubmitHandler = async (event) => {
         event.preventDefault();
         await axios
-            .post("/api/signin", loginForm)
+            .post("http://localhost:8100/signin", loginForm)
             .then((response) => {
                 localStorage.setItem("auth_token", response.data.token.access_token);
                 localStorage.setItem(

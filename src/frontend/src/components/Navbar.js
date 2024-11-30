@@ -23,7 +23,7 @@ const HoverNavDropdown = ({ title, id, children }) => {
 };
 
 const renderMainMenu = (handleSubmenuSelection) => (
-    <Navbar bg="light" data-bs-theme="light" expand="lg" className="navbar-custom">
+    <Navbar bg="dark" data-bs-theme="dark" expand="lg" className="navbar-custom">
         <Navbar.Brand href="#">
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
