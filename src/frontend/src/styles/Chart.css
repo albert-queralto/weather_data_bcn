@@ -3,17 +3,18 @@
     width: 100%;
     margin: 0;
     padding: 0;
+    align-items: center;
+    justify-content: center;
 }
 
 .sidebar {
     flex: 1;
-    padding: 10px;
-    margin-top: 70px;
+    padding: 10px 100px;
+    margin-top: 0px;
 }
 
 .main-content {
     flex: 3;
-    padding: 10px;
 }
 
 .map-chart-container {
