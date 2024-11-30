@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Home from "./components/Home";
 import Login from "./components/Login";
 import Forgot from "./components/Forgot";
-// import UserList from "./components/UserList";
+import UserManagement from "./components/UserManagement";
 // import ApiManagement from "./components/Apis";
 import renderMainMenu from "./components/Navbar";
 import ChartComponent from './components/ProcessedDataChart';
@@ -43,8 +43,8 @@ function App() {
 
     const renderSubmenuSelection = () => {
         switch (submenuSelection) {
-            // case "usermanagement":
-            //     return <UserList />;
+            case "usermanagement":
+                return <UserManagement />;
             // case "apis":
             //     return <ApiManagement />;
             // case "preprocessors":
@@ -53,6 +53,8 @@ function App() {
             //     return <ModelManagement />;
             // case "outliers":
             //     return <OutliersManagement />;
+            case "preprocessing-visualize":
+                return <ChartComponent />;
             // case "preprocessing-compare":
             //     return <PreprocessingCompare />;
             // case "preprocessing-edit":
