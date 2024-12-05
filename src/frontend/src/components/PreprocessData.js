@@ -17,15 +17,15 @@ const customIcon = L.icon({
 });
 
 const PreprocessData = () => {
-  const [position, setPosition] = useState(null);
+  const [position, setPosition] = useState({ lat: 41.389, lng: 2.159 });
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [confirmationMessage, setConfirmationMessage] = useState('');
 
   const handleMapClick = (latlng) => {
     setPosition({
-      lat: latlng.lat.toFixed(2),
-      lng: latlng.lng.toFixed(2)
+      lat: latlng.lat.toFixed(3),
+      lng: latlng.lng.toFixed(3)
     });
   };
 
