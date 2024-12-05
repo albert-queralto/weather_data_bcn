@@ -20,8 +20,8 @@ POSTGRES_DB_PORT = int(os.getenv('POSTGRES_DB_PORT'))
 POSTGRES_DB_ENGINE = os.getenv('POSTGRES_DB_ENGINE')
 DB_BATCH_SIZE = int(os.getenv('DB_BATCH_SIZE'))
 
-from utils.file_handlers import TomlHandler
-from utils.custom_logger import CustomLogger
+from dependencies.toml import TomlHandler
+from dependencies.logger import CustomLogger
 from database.connections import DatabaseConnection, ConnectionStringBuilder
 from loaders.preprocessing import EngineeredFeaturesManager
 from loaders.utils import LastProcessedDataManager
@@ -42,7 +42,7 @@ preprocessing_config = CONFIG_DICT.get("preprocessing", {})
 LOGGER_CONFIG = TomlHandler("logger.toml").load()
 
 filename = Path(__file__).resolve().stem
-logger = CustomLogger(config_dict=LOGGER_CONFIG, logger_name=filename).setup_logger()
+logger = CustomLogger(config=LOGGER_CONFIG, logger_name=filename).setup()
 
 postgres_connection_string = ConnectionStringBuilder()(
             connection_type=POSTGRES_DB_ENGINE,
