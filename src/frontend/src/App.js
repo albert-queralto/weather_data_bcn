@@ -5,9 +5,9 @@ import Home from "./components/Home";
 import Login from "./components/Login";
 import Forgot from "./components/Forgot";
 import UserManagement from "./components/UserManagement";
-// import ApiManagement from "./components/Apis";
 import renderMainMenu from "./components/Navbar";
 import ChartComponent from './components/ProcessedDataChart';
+import PreprocessData from './components/PreprocessData';
 // import PreprocessorManagement from "./components/PreprocessorManagement";
 // import ModelManagement from "./components/ModelManagement";
 // import PreprocessingCompare from "./components/PreprocessingCompare";
@@ -45,8 +45,6 @@ function App() {
         switch (submenuSelection) {
             case "usermanagement":
                 return <UserManagement />;
-            // case "apis":
-            //     return <ApiManagement />;
             // case "preprocessors":
             //     return <PreprocessorManagement />;
             // case "models":
@@ -55,6 +53,8 @@ function App() {
             //     return <OutliersManagement />;
             case "preprocessing-visualize":
                 return <ChartComponent />;
+            case "preprocessing-data":
+                return <PreprocessData />;
             // case "preprocessing-compare":
             //     return <PreprocessingCompare />;
             // case "preprocessing-edit":

@@ -31,18 +31,16 @@ const renderMainMenu = (handleSubmenuSelection) => (
             <Nav className="mr-auto">
                 <HoverNavDropdown title="Management" id="gestion-dropdown">
                     <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("usermanagement")}>Users</NavDropdown.Item>
-                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("apis")}>APIs</NavDropdown.Item>
                     <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("preprocessors")}>Preprocessors</NavDropdown.Item>
                     <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("models")}>Models</NavDropdown.Item>
-                    {/* <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("outliers")}>Outliers</NavDropdown.Item> */}
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("outliers")}>Outliers</NavDropdown.Item>
                 </HoverNavDropdown>
                 <HoverNavDropdown title="Data Preprocessing" id="preprocessing-dropdown">
                     <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("preprocessing-visualize")}>Visualize</NavDropdown.Item>
-                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("preprocessing-edit")}>Create or delete</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("preprocessing-data")}>Preprocess data</NavDropdown.Item>
                 </HoverNavDropdown>
                 <HoverNavDropdown title="Training and predictions" id="training-dropdown">
-                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("training-edit")}>Create or delete</NavDropdown.Item>
-                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("training-training")}>Entrenamiento y predicciones manuales</NavDropdown.Item>
+                    <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("training-training")}>Manual training</NavDropdown.Item>
                 </HoverNavDropdown>
                 <HoverNavDropdown title="Informes" id="reports-dropdown">
                     <NavDropdown.Item href="#" onClick={() => handleSubmenuSelection("reports-predictions")}>Evolución predicciones</NavDropdown.Item>
