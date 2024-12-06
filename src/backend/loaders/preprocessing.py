@@ -149,3 +149,19 @@ class EngineeredFeaturesManager(DatabaseDataManager):
             var_name='variable_code',
             value_name='value'
         )
+
+    def get_coordinates(self) -> list[dict[str, str]]:
+        """
+        Returns the unique coordinates from the database.
+        """
+        statement = select(EngineeredFeaturesTable.latitude, EngineeredFeaturesTable.longitude).distinct()
+        with self.Session.begin() as session:
+            query = session.execute(statement).all()
+            results = [
+                {
+                    "latitude": row[0],
+                    "longitude": row[1]
+                }
+                for row in query
+            ]
+        return results
