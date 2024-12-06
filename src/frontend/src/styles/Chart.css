@@ -9,7 +9,7 @@
 
 .sidebar {
     flex: 1;
-    padding: 10px 100px;
+    padding: 10px 70px;
     margin-top: 0px;
 }
 
@@ -37,4 +37,36 @@
 .datepicker-container {
     position: relative;
     z-index: 10000;
+}
+
+.date-picker-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.date-picker-row > div {
+    flex: 1;
+}
+
+.coordinate-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.coordinate-row > div {
+    flex: 1;
+}
+
+label {
+    font-size: 16px;
+}
+
+select, .react-datepicker__input-container {
+    font-size: 14px;
+}
+
+.react-datepicker {
+    font-size: 12px;
 }

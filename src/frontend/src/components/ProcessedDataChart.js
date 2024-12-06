@@ -99,10 +99,16 @@ const ChartComponent = () => {
         hour: "HH:mm"
       }
     }));
+    xAxis.get("renderer").labels.template.setAll({
+      fontSize: 14
+    });
 
     let yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
       renderer: am5xy.AxisRendererY.new(root, {})
     }));
+    yAxis.get("renderer").labels.template.setAll({
+      fontSize: 14
+    });
 
     Object.keys(groupedData).forEach(variable_code => {
       if (selectedVariables.length === 0 || selectedVariables.includes(variable_code)) {
@@ -114,7 +120,7 @@ const ChartComponent = () => {
           valueXField: "date",
           strokeWidth: 2,
           tooltip: am5.Tooltip.new(root, {
-            labelText: "{name}: {valueY}"
+            labelText: "[fontSize: 14px]{name}: {valueY}",
           })
         }));
 
@@ -189,29 +195,31 @@ const ChartComponent = () => {
       </div>
       <div className="container">
         <div className="sidebar">
-          <div className="form-group">
-            <label>Start Date: </label>
-            <DatePicker 
-              selected={startDate} 
-              onChange={date => setStartDate(date)} 
-              showTimeSelect
-              dateFormat="Pp"
-              popperClassName="datepicker-container"
-            />
+          <div className="form-group date-picker-row">
+            <div>
+              <label>Start Date: </label>
+              <DatePicker 
+                selected={startDate} 
+                onChange={date => setStartDate(date)} 
+                showTimeSelect
+                dateFormat="Pp"
+                popperClassName="datepicker-container"
+              />
+            </div>
+            <div>
+              <label>End Date: </label>
+              <DatePicker 
+                selected={endDate} 
+                onChange={date => setEndDate(date)} 
+                showTimeSelect
+                dateFormat="Pp"
+                popperClassName="datepicker-container"
+              />
+            </div>
           </div>
-          <div className="form-group">
-            <label>End Date: </label>
-            <DatePicker 
-              selected={endDate} 
-              onChange={date => setEndDate(date)} 
-              showTimeSelect
-              dateFormat="Pp"
-              popperClassName="datepicker-container"
-            />
-          </div>
-          <div>
-            <label>
-              Latitude:
+          <div className="form-group coordinate-row">
+            <div>
+              <label>Latitude:</label>
               <select value={latitude} onChange={handleLatitudeChange}>
                 {coordinatePairs.map(pair => (
                   <option key={pair.latitude} value={pair.latitude}>
@@ -219,9 +227,9 @@ const ChartComponent = () => {
                   </option>
                 ))}
               </select>
-            </label>
-            <label>
-              Longitude:
+            </div>
+            <div>
+              <label>Longitude:</label>
               <select value={longitude} onChange={handleLongitudeChange}>
                 {coordinatePairs.map(pair => (
                   <option key={pair.longitude} value={pair.longitude}>
@@ -229,7 +237,7 @@ const ChartComponent = () => {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
           </div>
           <div className="form-group">
             <label>Variable Codes: </label>
