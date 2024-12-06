@@ -121,7 +121,13 @@ def preprocess_data(request: PreprocessingRequest):
     except Exception as e:
         logger.error(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+@router.get("/processing/coordinates")
+def get_coordinates():
+    loader = EngineeredFeaturesManager(postgres_connect, logger)
+    coordinates = loader.get_coordinates()
+    return {"coordinates": coordinates}
+
 if __name__ == "__main__":
     loader = EngineeredFeaturesManager(postgres_connect, logger)
     df = loader.load(
@@ -131,3 +137,5 @@ if __name__ == "__main__":
         end_date="2024-10-02"
     )
     print(df.head())
+
+    
