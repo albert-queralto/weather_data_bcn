@@ -24,8 +24,8 @@ class EngineeredFeaturesManager(DatabaseDataManager):
     Loads the data from the engineered_features table.
     """
     def load(self,
-            latitude: str,
-            longitude: str,
+            latitude: float,
+            longitude: float,
             start_date: Optional[str] = None,
             end_date: Optional[str] = None,
             filter_variables: Optional[list[str]] = None,
@@ -33,8 +33,8 @@ class EngineeredFeaturesManager(DatabaseDataManager):
         conditions_list = ['None', None, '']
         conditions = [
             and_(
-                EngineeredFeaturesTable.latitude == latitude,
-                EngineeredFeaturesTable.longitude == longitude,
+                EngineeredFeaturesTable.latitude == str(latitude),
+                EngineeredFeaturesTable.longitude == str(longitude),
             )
         ]
 
@@ -164,4 +164,44 @@ class EngineeredFeaturesManager(DatabaseDataManager):
                 }
                 for row in query
             ]
+        return results
+    
+    def get_variables(self) -> list[str]:
+        """
+        Returns the unique variables from the database.
+        """
+        statement = select(EngineeredFeaturesTable.variable_code).distinct()
+        with self.Session.begin() as session:
+            query = session.execute(statement).all()
+            results = [row[0] for row in query]
+        return results
+    
+    def get_min_date(self, latitude: float, longitude: float) -> str:
+        """
+        Returns the minimum date from the database.
+        """
+        statement = select(EngineeredFeaturesTable.timestamp).where(
+            and_(
+                EngineeredFeaturesTable.latitude == str(latitude),
+                EngineeredFeaturesTable.longitude == str(longitude)
+            )
+        ).order_by(EngineeredFeaturesTable.timestamp).limit(1)
+        with self.Session.begin() as session:
+            query = session.execute(statement).all()
+            results = query[0][0]
+        return results
+    
+    def get_max_date(self, latitude: float, longitude: float) -> str:
+        """
+        Returns the maximum date from the database.
+        """
+        statement = select(EngineeredFeaturesTable.timestamp).where(
+            and_(
+                EngineeredFeaturesTable.latitude == str(latitude),
+                EngineeredFeaturesTable.longitude == str(longitude)
+            )
+        ).order_by(EngineeredFeaturesTable.timestamp.desc()).limit(1)
+        with self.Session.begin() as session:
+            query = session.execute(statement).all()
+            results = query[0][0]
         return results
