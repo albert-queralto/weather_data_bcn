@@ -3,3 +3,9 @@ data_type = "engineered_data"
 start_time_window = 100
 direction = "backward"
 date_frequency = "1D"
+
+[realtime_training]
+data_type = "realtime_predictive_models"
+model_type = "autoval_reg"
+filter_columns = ["original_data", "validation_boolean"]
+column_prefix = ""
