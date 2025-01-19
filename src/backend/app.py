@@ -18,6 +18,8 @@ sys.path.extend([str(MAIN_PATH), str(BACKEND_PATH)])
 from routers import (
     preprocessing,
     users,
+    training,
+    predictions
 )
 
 from dotenv import load_dotenv
@@ -55,6 +57,8 @@ def start_application():
 
     app.include_router(preprocessing.router)
     app.include_router(users.router)
+    app.include_router(training.router)
+    app.include_router(predictions.router)
     return app
 
 app = start_application()
