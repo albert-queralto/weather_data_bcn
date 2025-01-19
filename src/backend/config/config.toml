@@ -9,3 +9,7 @@ data_type = "realtime_predictive_models"
 model_type = "autoval_reg"
 filter_columns = ["original_data", "validation_boolean"]
 column_prefix = ""
+
+[realtime_predictions]
+data_type = "realtime_predictions"
+model_type = "autoval_reg"
