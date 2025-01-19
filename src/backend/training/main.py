@@ -33,8 +33,6 @@ POSTGRES_DB_NAME = os.getenv('POSTGRES_DB_NAME')
 POSTGRES_DB_PORT = int(os.getenv('POSTGRES_DB_PORT'))
 POSTGRES_DB_ENGINE = os.getenv('POSTGRES_DB_ENGINE')
 DB_BATCH_SIZE = int(os.getenv('DB_BATCH_SIZE'))
-DB_ENGINE_SQLITE = os.getenv('DB_ENGINE_SQLITE')
-DB_PATH_SQLITE = os.getenv('DB_PATH_SQLITE')
 
 
 # Import TOML configuration file
@@ -251,160 +249,6 @@ class TrainModels:
         target_variable = [var for var in variables if 'precipitation' in var][0]
         return variables, target_variable
 
-def training_all_sources(
-        logger: CustomLogger, 
-        end_date: str, 
-        training_params: dict[str, Any], 
-        train_pred_models: TrainModels, 
-        target_sources: list[str], 
-        target_locations: list[str], 
-        target_variables: list[str], 
-        df: pd.DataFrame, 
-        model_manager: ModelVersioningManager
-    ):
-    for source_name, location_code, variable in zip(
-                            target_sources, target_locations, target_variables):
-        trained_bool, _ = check_trained_models(
-            source_name=source_name,
-            location_code=location_code,
-            model_type=training_params['model_type'],
-            target_variable=variable,
-            train_models_older_than=training_params['train_models_older_than'],
-            col_prefix=training_params['column_prefix'],
-            logger=logger,
-            model_loader=model_manager
-        )
-
-        if len(target_variables) > 1:
-            variable_to_drop = [var for var in target_variables if var != variable][0]
-            filtered_df = df.drop(columns=variable_to_drop, axis=1)
-        else:
-            filtered_df = df.copy()
-        
-        if trained_bool is True:
-            # ----------------- DEBUGGING -----------------
-            logger.debug("Training and testing models for data prediction...")
-            logger.debug(f"Train models older than {training_params['train_models_older_than']} days...")
-            # ---------------------------------------------
-            train_pred_models.model_training(
-                model_manager=model_manager,
-                df=filtered_df,
-                source_name=source_name,
-                location_code=location_code,
-                target_variable=variable,
-                training_params=training_params
-            )
-
-            # Save the last date processed to the LastProcessedDataTable
-            last_date_loader = LastProcessedDataManager(
-                db_connection=train_pred_models.sqlite_connect,
-                logger=logger,
-                location_code=location_code
-            )
-
-            if isinstance(end_date, str):
-                end_date = datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S')
-            last_date_loader.save(
-                data_type=training_params['data_type'],
-                timestamp=end_date
-            )
-
-def manual_training(
-        logger: CustomLogger,
-        features: list[tuple[str, ...]],
-        target: tuple[str, ...],
-        start_date: Optional[str],
-        end_date: Optional[str],
-        null_filling_params: dict[str, Any],
-        training_params: dict[str, Any],
-        training_params_df: pd.DataFrame,
-        configuration_date: Optional[str] = None
-    ) -> None:
-    """
-    Trains the models used by the autovalidation system to make predictions.
-    """
-    # Log the arguments used to run the script
-    # ----------------- DEBUGGING -----------------
-    params = {
-        'features': features,
-        'target': target,
-        'start_date': start_date,
-        'end_date': end_date,
-        'null_filling_params': null_filling_params,
-        'training_params': training_params,
-        'configuration_date': configuration_date
-    }
-    logger.debug("Arguments used to run the script:")
-    for key, value in params.items():
-        logger.debug(f"{key}: {value}")
-    # ---------------------------------------------
-
-    train_pred_models = TrainModels(logger)
-    train_pred_models.set_database_engines()
-    params_dict = train_pred_models.create_variables(df=training_params_df)
-    training_params.update(params_dict)
-
-    if bool(training_params['auto_training']) is False:
-        # ----------------- DEBUGGING -----------------
-        logger.debug("Autotraining is deactivated...")
-        # ---------------------------------------------
-        training_params['train_models_older_than'] = 0
-
-    variables = features.copy()
-    variables.append(target)
-
-    source_names = [var[0] for var in variables]
-    location_codes = [var[1] for var in variables]
-    variable_codes = [var[2] for var in variables]
-    
-    seasonal_variables = train_pred_models.create_seasonal_variables()
-    for var in seasonal_variables:
-        if var not in variable_codes:
-            source_names.append(target[0])
-            location_codes.append(target[1])
-            variable_codes.append(var)
-            
-    target_sources = [target[0]]
-    target_locations = [target[1]]
-    target_variables = [target[2]]
-
-    start_date, end_date = train_pred_models.create_start_end_dates(
-        start_date=start_date,
-        end_date=end_date,
-        window=training_params['start_time_window'],
-        direction=training_params['direction'],
-        date_frequency=training_params['date_frequency'],
-        location_code=target[1]
-    )
-    # ----------------- DEBUGGING -----------------
-    logger.debug(f"The start and end dates are: {start_date} | {end_date}")
-    logger.debug("Loading data...")
-    # ---------------------------------------------
-    df = train_pred_models.data_loading(
-        start_date=start_date,
-        end_date=end_date,
-        latitudes=latitude,
-        longitudes=longitudes,
-        variable_codes=variable_codes
-    )
-    # ----------------- DEBUGGING -----------------
-    logger.debug(f"Data loaded with shape {df.shape}")
-    logger.debug(f"Are there nulls?\n{df.isnull().sum()}")
-    # ---------------------------------------------
-
-    model_manager = ModelVersioningManager(
-        db_connection=train_pred_models.postgres_connect,
-        logger=logger,
-    )
-
-    training_all_sources(logger, end_date, training_params, train_pred_models,
-                         target_sources, target_locations, target_variables, 
-                         df, model_manager)
-
-    train_pred_models.postgres_connect.close()
-    train_pred_models.sqlite_connect.close()
-
-
 def main(
         logger: CustomLogger,
         latitude: float,
@@ -413,7 +257,6 @@ def main(
         end_date: Optional[str],
         null_filling_params: dict[str, Any],
         training_params: dict[str, Any],
-        configuration_date: Optional[str] = None
     ) -> None:
     params = {
         "latitude": latitude,
@@ -422,7 +265,6 @@ def main(
         'end_date': end_date,
         'null_filling_params': null_filling_params,
         'training_params': training_params,
-        'configuration_date': configuration_date
     }
     logger.debug("Arguments used to run the script:")
     for key, value in params.items():
@@ -488,7 +330,7 @@ def main(
         )
 
         if isinstance(end_date, str):
-            end_date = datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
         last_date_loader.save(
             latitude=latitude,
             longitude=longitude,

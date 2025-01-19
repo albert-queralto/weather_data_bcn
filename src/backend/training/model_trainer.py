@@ -174,7 +174,6 @@ class ModelTrainer:
             self.logger.debug(f"Model version: {model_version}")
             self.logger.debug(f"Last data received: {self.data_config.df.index[-1]}")
             # ---------------------------------------------
-
         self.model_manager.save(models_df, self.data_config.batch_size)
 
     def _get_feature_importance(self,
