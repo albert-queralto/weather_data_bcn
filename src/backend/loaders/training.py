@@ -31,14 +31,14 @@ class ModelVersioningManager(DatabaseDataManager):
 
     def get_model_version(self,
             model_type: str,
-            latitude: str,
-            longitude: str,
+            latitude: float,
+            longitude: float,
             target_variable: str
         ) -> int:
         statement = select(ModelVersioningTable).where(
             ModelVersioningTable.model_type == model_type,
-            ModelVersioningTable.latitude == latitude,
-            ModelVersioningTable.longitude == longitude,
+            ModelVersioningTable.latitude == str(latitude),
+            ModelVersioningTable.longitude == str(longitude),
             ModelVersioningTable.target_variable == target_variable
         )
         with self.Session.begin() as session:
@@ -48,8 +48,8 @@ class ModelVersioningManager(DatabaseDataManager):
     
     def get_recent_models_from_db(self,
             model_type: str,
-            latitude: str,
-            longitude: str,
+            latitude: float,
+            longitude: float,
             target_variable: Optional[str] = None,
             columns: list[str] = []
         ) -> list[Any]:
@@ -57,8 +57,8 @@ class ModelVersioningManager(DatabaseDataManager):
         conditions = [
             and_(
                 ModelVersioningTable.model_type == model_type,
-                ModelVersioningTable.latitude == latitude,
-                ModelVersioningTable.longitude == longitude,
+                ModelVersioningTable.latitude == str(latitude),
+                ModelVersioningTable.longitude == str(longitude),
             )
         ]
 
@@ -80,15 +80,15 @@ class ModelVersioningManager(DatabaseDataManager):
             
     def get_best_model_from_date_range(self,
             model_type: str,
-            latitude: str,
-            longitude: str,
+            latitude: float,
+            longitude: float,
             target_variable: Optional[str] = None,
             columns: list[str] = []
         ) -> list[Any]:
         conditions = [
             ModelVersioningTable.model_type == model_type,
-            ModelVersioningTable.latitude == latitude,
-            ModelVersioningTable.longitude == longitude,
+            ModelVersioningTable.latitude == str(latitude),
+            ModelVersioningTable.longitude == str(longitude),
         ]
 
         if target_variable:
@@ -132,8 +132,8 @@ class ModelVersioningManager(DatabaseDataManager):
         return []
 
     def load_regression_models(self,
-            latitude: str,
-            longitude: str,
+            latitude: float,
+            longitude: float,
             target_variable: str,
             model_type: str,
         ) -> dict[str, tuple]:
@@ -197,8 +197,8 @@ class ModelVersioningManager(DatabaseDataManager):
             model_date: datetime,
             model_name: str,
             model_type: str,
-            latitude: str,
-            longitude: str,
+            latitude: float,
+            longitude: float,
             target_variable: str,
             columns: list[str] = []
         ) -> list[Any]:
@@ -207,8 +207,8 @@ class ModelVersioningManager(DatabaseDataManager):
             and_(
                 ModelVersioningTable.model_name == model_name,
                 ModelVersioningTable.model_type == model_type,
-                ModelVersioningTable.latitude == latitude,
-                ModelVersioningTable.longitude == longitude,
+                ModelVersioningTable.latitude == str(latitude),
+                ModelVersioningTable.longitude == str(longitude),
                 ModelVersioningTable.target_variable.op('~')(f'{target_variable}')
             )
         ]
@@ -237,8 +237,8 @@ class ModelVersioningManager(DatabaseDataManager):
         return []
 
     def get_models_for_weights_visualization(self,
-            latitude: str,
-            longitude: str,
+            latitude: float,
+            longitude: float,
             model_name: str,
             model_type: str,
             target_variable: str,
