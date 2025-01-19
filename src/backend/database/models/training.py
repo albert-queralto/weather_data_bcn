@@ -34,7 +34,7 @@ class ModelVersioningTable(Base):
     latitude = Column(
         name = 'latitude',
         type_= String,
-        primary_key = False,
+        primary_key = True,
         nullable = False,
         index = False
     )
