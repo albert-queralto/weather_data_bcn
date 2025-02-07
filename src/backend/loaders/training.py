@@ -117,14 +117,22 @@ class ModelVersioningManager(DatabaseDataManager):
             ModelVersioningTable.model_forecast_accuracy == max_accuracy_subquery
         ]
 
-        statement = select(
-            *[getattr(ModelVersioningTable, col) for col in columns]
-        ).where(
-            and_(*conditions, *date_range_conditions, *accuracy_conditions)
-        ).order_by(
-            ModelVersioningTable.model_version.desc(),
-            ModelVersioningTable.model_date.desc()
-        )
+        if columns:
+            statement = select(
+                *[getattr(ModelVersioningTable, col) for col in columns]
+            ).where(
+                and_(*conditions, *date_range_conditions, *accuracy_conditions)
+            ).order_by(
+                ModelVersioningTable.model_version.desc(),
+                ModelVersioningTable.model_date.desc()
+            )
+        else:
+            statement = select(ModelVersioningTable).where(
+                and_(*conditions, *date_range_conditions, *accuracy_conditions)
+            ).order_by(
+                ModelVersioningTable.model_version.desc(),
+                ModelVersioningTable.model_date.desc()
+            )
 
         with self.Session.begin() as session:
             if query := session.execute(statement).all():
