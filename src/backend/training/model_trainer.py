@@ -50,25 +50,11 @@ class ModelConfig:
     model_metric_name: str
     forecast_accuracy_threshold: float
 
-
 @dataclass
-class ModelTrainer:
-    """
-    Contains different methods to train machine learning models.
-    """
-    model_manager: ModelVersioningManager
-    logger: CustomLogger
+class DataPreprocessor:
     data_config: DataConfig
-    training_config: TrainingConfig
-    model_config: ModelConfig
-
-    def train(self) -> None:
-        """
-        Performs cross-validation for the models in the models_dict dictionary. For
-        each model uses the specific parameters selected from the params_dict.
-        """
-        if not self.model_config.models:
-            raise ValueError("The models dictionary is empty.")
+    
+    def preprocess(self):
         X = self.data_config.df.drop(columns=self.data_config.target_variable).copy()
         y = self.data_config.df[self.data_config.target_variable].copy()
 
@@ -90,12 +76,35 @@ class ModelTrainer:
         X_test.index = pd.to_datetime(test_indices)
         y_train.index = pd.to_datetime(train_indices)
         y_test.index = pd.to_datetime(test_indices)
+        
+        return X_train, X_test, y_train, y_test
+
+@dataclass
+class ModelTrainer:
+    """
+    Contains different methods to train machine learning models.
+    """
+    model_manager: ModelVersioningManager
+    logger: CustomLogger
+    data_preprocessor: DataPreprocessor
+    training_config: TrainingConfig
+    model_config: ModelConfig
+
+    def train(self) -> None:
+        """
+        Performs cross-validation for the models in the models_dict dictionary. For
+        each model uses the specific parameters selected from the params_dict.
+        """
+        if not self.model_config.models:
+            raise ValueError("The models dictionary is empty.")
+        
+        X_train, X_test, y_train, y_test = self.data_preprocessor.preprocess()
 
         models_df = pd.DataFrame()
         for model_name, model in self.model_config.models.items():
             # ----------------- DEBUGGING -----------------
-            self.logger.debug(f"Lat: {self.data_config.latitude} Lon: {self.data_config.longitude}")
-            self.logger.debug(f"Training model: {model_name} for {self.data_config.target_variable}")
+            self.logger.debug(f"Lat: {self.data_preprocessor.data_config.latitude} Lon: {self.data_preprocessor.data_config.longitude}")
+            self.logger.debug(f"Training model: {model_name} for {self.data_preprocessor.data_config.target_variable}")
             # ---------------------------------------------
             # Train the models using cross-validation
             estimator, scaler, polynomial, val_score = \
@@ -123,33 +132,29 @@ class ModelTrainer:
                 scaler
             )
             
-            # ----------------- DEBUGGING -----------------
             self.logger.debug(f"The test score is: {test_scores[model_name][self.model_config.model_metric_name]}")
-            # ---------------------------------------------
 
             feature_importance_variables, feature_importance_values = \
                 self._get_feature_importance(estimator, X_train_tmp, X_test_tmp)
 
-            # ----------------- DEBUGGING -----------------
             self.logger.debug(f"Feature importance variables: {feature_importance_variables}")
             self.logger.debug(f"Feature importance values: {feature_importance_values}")
-            # ---------------------------------------------
 
             model_date = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
             model_version = self.model_manager.get_model_version(
                 model_type=self.model_config.model_type,
-                latitude=self.data_config.latitude,
-                longitude=self.data_config.longitude,
-                target_variable=self.data_config.target_variable
+                latitude=self.data_preprocessor.data_config.latitude,
+                longitude=self.data_preprocessor.data_config.longitude,
+                target_variable=self.data_preprocessor.data_config.target_variable
             )
 
             data = {
                 'model_date': model_date,
                 'model_name': model_name,
                 'model_type': self.model_config.model_type,
-                'latitude': self.data_config.latitude,
-                'longitude': self.data_config.longitude,
-                'target_variable': self.data_config.target_variable,
+                'latitude': self.data_preprocessor.data_config.latitude,
+                'longitude': self.data_preprocessor.data_config.longitude,
+                'target_variable': self.data_preprocessor.data_config.target_variable,
                 'model_feature_names': str(estimator.feature_names_in_.tolist()),
                 'model_features_count': estimator.n_features_in_,
                 'model_version': model_version,
@@ -172,9 +177,9 @@ class ModelTrainer:
             # ----------------- DEBUGGING -----------------
             self.logger.debug(f"Model date: {model_date}")
             self.logger.debug(f"Model version: {model_version}")
-            self.logger.debug(f"Last data received: {self.data_config.df.index[-1]}")
+            self.logger.debug(f"Last data received: {self.data_preprocessor.data_config.df.index[-1]}")
             # ---------------------------------------------
-        self.model_manager.save(models_df, self.data_config.batch_size)
+        self.model_manager.save(models_df, self.data_preprocessor.data_config.batch_size)
 
     def _get_feature_importance(self,
             model: Any, 
@@ -345,36 +350,37 @@ class ModelTrainer:
 
     def linear_regression_model(self,
             pipeline: Pipeline, X: pd.DataFrame, y: pd.Series
-        ) -> tuple[LinearRegression, StandardScaler, Any, float]:
+        ) -> tuple[LinearRegression, StandardScaler, Optional[PolynomialFeatures], float]:
         """
         Performs multilinear regression on the input dataframe and target variable.
         """
-        poly = None
-        df_index = X.index
+        poly = self._apply_polynomial_features(pipeline, X)
+        scaler, X_scaled, y_scaled = self._scale_data(pipeline, X, y)
+        lin_reg = pipeline.named_steps['linearregression']
+        lr, val_score = self._linear_reg_time_series_cv(X_scaled, y_scaled, lin_reg)
+        return lr, scaler, poly, val_score
+
+    def _apply_polynomial_features(self, pipeline: Pipeline, X: pd.DataFrame) -> Optional[PolynomialFeatures]:
+        """
+        Applies polynomial features transformation if present in the pipeline.
+        """
         if 'polynomialfeatures' in pipeline.named_steps:
             poly = pipeline.named_steps['polynomialfeatures']
-            X = poly.fit_transform(X)
-            X = pd.DataFrame(
-                X,
-                columns=poly.get_feature_names_out(),
-                index=df_index
-            )
+            X_transformed = poly.fit_transform(X)
+            X = pd.DataFrame(X_transformed, columns=poly.get_feature_names_out(), index=X.index)
+            return poly
+        return None
+
+    def _scale_data(self, pipeline: Pipeline, X: pd.DataFrame, y: pd.Series) -> tuple[StandardScaler, pd.DataFrame, pd.Series]:
+        """
+        Scales the data using the scaler in the pipeline.
+        """
         scaler = pipeline.named_steps['standardscaler']
-        
         data = pd.concat([X, y], axis=1)
-        scaled_data = pd.DataFrame(
-            scaler.fit_transform(data),
-            columns=data.columns,
-            index=df_index
-        )
-
-        X = scaled_data.drop(columns=y.name)
-        y = scaled_data[y.name]
-        
-        lin_reg = pipeline.named_steps['linearregression']
-
-        lr, val_score = self._linear_reg_time_series_cv(X, y, lin_reg)
-        return lr, scaler, poly, val_score
+        scaled_data = pd.DataFrame(scaler.fit_transform(data), columns=data.columns, index=X.index)
+        X_scaled = scaled_data.drop(columns=y.name)
+        y_scaled = scaled_data[y.name]
+        return scaler, X_scaled, y_scaled
 
     def _linear_reg_time_series_cv(self,
             X: pd.DataFrame, y: pd.Series, lr: LinearRegression
@@ -420,30 +426,37 @@ class ModelTrainer:
         Implements Optuna hyperparameter optimization for models that are not
         based on the LinearRegression class.
         """
-        scaler = pipeline.named_steps['standardscaler']
-
-        data = pd.concat([X, y], axis=1)
-        scaled_data = pd.DataFrame(
-            scaler.fit_transform(data),
-            columns=data.columns,
-            index=X.index
-        )
-
-        X = scaled_data.drop(columns=y.name)
-        y = scaled_data[y.name]
-
+        scaler, X_scaled, y_scaled = self._scale_data(pipeline, X, y)
         model = pipeline.steps[1][1]
-        optuna_opt = OptunaStudy(
+        optuna_opt = self._create_optuna_study(param_grid, model_name)
+
+        best_study, storage = self._run_optuna_study(optuna_opt, model, X_scaled, y_scaled)
+        model.set_params(**best_study.best_params)
+        best_score = best_study.best_value
+        optuna_opt.delete_storage(storage)
+        model.fit(X_scaled, y_scaled)
+        
+        return model, scaler, best_score
+
+    def _create_optuna_study(self, param_grid: dict, model_name: str) -> OptunaStudy:
+        """
+        Creates an OptunaStudy object with the given parameters.
+        """
+        return OptunaStudy(
             params=param_grid,
             model_name=model_name,
             task_type=self.model_config.model_type,
             scoring=self.model_config.model_metric_name,
-            test_size=self.data_config.test_size,
+            test_size=self.data_preprocessor.data_config.test_size,
             early_stop_patience=self.training_config.early_stop_patience,
             early_stop_mode=self.training_config.early_stop_mode,
             early_stop_threshold=self.training_config.early_stop_threshold,
         )
 
+    def _run_optuna_study(self, optuna_opt: OptunaStudy, model: Any, X: pd.DataFrame, y: pd.Series) -> tuple[Any, str]:
+        """
+        Runs the Optuna study and returns the best study and storage.
+        """
         best_study = None
         storage = ''
         for _ in range(self.training_config.n_study_runs):
@@ -467,10 +480,4 @@ class ModelTrainer:
                 best_study.best_value > self.training_config.early_stop_threshold
             )):
                 break
-
-        model.set_params(**best_study.best_params)
-        best_score = best_study.best_value
-        optuna_opt.delete_storage(storage)
-        model.fit(X, y)
-        
-        return model, scaler, best_score # type: ignore
+        return best_study, storage
