@@ -14,8 +14,6 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from torch import cuda
-
 # Add directory to import custom modules
 MAIN_PATH = Path(__file__).resolve().parents[1]
 sys.path.append(str(MAIN_PATH))
@@ -60,14 +58,11 @@ from loaders.utils import LastProcessedDataManager
 
 # Import the modules to train models
 from utils.model_helper_functions import check_trained_models
-from training.model_trainer import ModelTrainer, DataConfig, TrainingConfig, ModelConfig
+from training.model_trainer import ModelTrainer, DataConfig, TrainingConfig, ModelConfig, DataPreprocessor
 
 # Import predictive models
-if not cuda.is_available():
-    from sklearn.linear_model import LinearRegression
-    from sklearn.neural_network import MLPRegressor
-else:
-    from cuml.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression
+from sklearn.neural_network import MLPRegressor
 from xgboost import XGBRegressor
 
 
@@ -152,6 +147,8 @@ class TrainModels:
             batch_size=DB_BATCH_SIZE,
         )
 
+        data_preprocessor = DataPreprocessor(data_config)
+
         training_config = TrainingConfig(
             cv_splits=training_params['cv_splits'],
             n_iter=training_params['n_iter'],
@@ -172,7 +169,7 @@ class TrainModels:
         model_trainer = ModelTrainer(
             model_manager=model_manager,
             logger=self.logger,
-            data_config=data_config,
+            data_preprocessor=data_preprocessor,
             training_config=training_config,
             model_config=model_config            
         )
@@ -191,8 +188,6 @@ class TrainModels:
                     booster='gbtree',
                     eval_metric='rmse'
                 )
-                if cuda.is_available():
-                    models[name].set_params(device='cuda')
             elif name == 'mlpregressor':
                 models[name] = MLPRegressor()
         return models
