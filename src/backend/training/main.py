@@ -62,7 +62,6 @@ from training.model_trainer import ModelTrainer, DataConfig, TrainingConfig, Mod
 
 # Import predictive models
 from sklearn.linear_model import LinearRegression
-from sklearn.neural_network import MLPRegressor
 from xgboost import XGBRegressor
 
 
@@ -188,8 +187,6 @@ class TrainModels:
                     booster='gbtree',
                     eval_metric='rmse'
                 )
-            elif name == 'mlpregressor':
-                models[name] = MLPRegressor()
         return models
 
     def _build_model_params_dict(self,
