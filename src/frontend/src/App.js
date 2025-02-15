@@ -8,11 +8,7 @@ import UserManagement from "./components/UserManagement";
 import renderMainMenu from "./components/Navbar";
 import ChartComponent from './components/ProcessedDataChart';
 import PreprocessData from './components/PreprocessData';
-// import PreprocessorManagement from "./components/PreprocessorManagement";
-// import ModelManagement from "./components/ModelManagement";
-// import PreprocessingCompare from "./components/PreprocessingCompare";
-// import PreprocessingEditConfigs from "./components/PreprocessingEditConfigs";
-// import TrainingEditConfigs from "./components/TrainingEditConfigs";
+import TrainModelForm from "./components/TrainingForm";
 // import TrainingPrediction from "./components/TrainingPredictions";
 import "./styles/App.css";
 // import PredictionsEvolution from "./components/PredictionsEvolution";
@@ -45,22 +41,14 @@ function App() {
         switch (submenuSelection) {
             case "usermanagement":
                 return <UserManagement />;
-            // case "preprocessors":
-            //     return <PreprocessorManagement />;
-            // case "models":
-            //     return <ModelManagement />;
             // case "outliers":
             //     return <OutliersManagement />;
             case "preprocessing-visualize":
                 return <ChartComponent />;
             case "preprocessing-data":
                 return <PreprocessData />;
-            // case "preprocessing-compare":
-            //     return <PreprocessingCompare />;
-            // case "preprocessing-edit":
-            //     return <PreprocessingEditConfigs />;
-            // case "training-edit":
-            //     return <TrainingEditConfigs />;
+            case "training-training":
+                return <TrainModelForm />;
             // case "training-predictions":
             //     return <TrainingPrediction />;
             // case "reports-predictions":
